@@ -1,13 +1,34 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { DateRange } from "react-day-picker";
+import Navigation from "@/components/Navigation";
+import HeroSection from "@/components/HeroSection";
+import ApartmentsSection from "@/components/ApartmentsSection";
+import Footer from "@/components/Footer";
 
 const Index = () => {
+  const [searchedDates, setSearchedDates] = useState<{ from: Date; to: Date } | null>(null);
+  const [searchedGuests, setSearchedGuests] = useState<number | undefined>();
+
+  const handleSearch = (dateRange: DateRange | undefined, guests: number) => {
+    if (dateRange?.from && dateRange?.to) {
+      setSearchedDates({ from: dateRange.from, to: dateRange.to });
+    }
+    setSearchedGuests(guests);
+    
+    // Scroll to apartments section
+    const apartmentsSection = document.getElementById("apartments");
+    if (apartmentsSection) {
+      apartmentsSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <main className="min-h-screen bg-background">
+      <Navigation />
+      <HeroSection onSearch={handleSearch} />
+      <ApartmentsSection searchedDates={searchedDates} searchedGuests={searchedGuests} />
+      <Footer />
+    </main>
   );
 };
 
