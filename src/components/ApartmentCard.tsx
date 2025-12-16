@@ -1,9 +1,11 @@
-import { Users, Bed, Bath, Wifi, Car, MapPin } from "lucide-react";
+import { Users, Bed, Bath, Wifi, Car } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export interface Apartment {
   id: number;
+  slug: string;
   name: string;
   image: string;
   price: number;
@@ -92,14 +94,21 @@ const ApartmentCard = ({ apartment, onBook }: ApartmentCardProps) => {
         </div>
 
         {/* CTA */}
-        <Button
-          variant={apartment.available ? "default" : "secondary"}
-          className="w-full"
-          onClick={() => onBook(apartment)}
-          disabled={!apartment.available}
-        >
-          {apartment.available ? "Book Now" : "Not Available"}
-        </Button>
+        <div className="flex gap-2">
+          <Link to={`/apartment/${apartment.slug}`} className="flex-1">
+            <Button variant="outline" className="w-full">
+              View Details
+            </Button>
+          </Link>
+          <Button
+            variant={apartment.available ? "default" : "secondary"}
+            className="flex-1"
+            onClick={() => onBook(apartment)}
+            disabled={!apartment.available}
+          >
+            {apartment.available ? "Book Now" : "Booked"}
+          </Button>
+        </div>
       </div>
     </article>
   );
