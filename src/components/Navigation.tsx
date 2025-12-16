@@ -6,9 +6,9 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: "#apartments", label: "Apartments" },
-    { href: "#location", label: "Location" },
-    { href: "#about", label: "About Us" },
+    { href: "/#apartments", label: "Apartments" },
+    { href: "/reviews", label: "Reviews" },
+    { href: "/travel-tips", label: "Travel Tips" },
     { href: "#contact", label: "Contact" },
   ];
 

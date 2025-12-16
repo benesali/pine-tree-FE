@@ -1,48 +1,22 @@
 import { useState, useEffect } from "react";
 import ApartmentCard, { Apartment } from "./ApartmentCard";
 import { toast } from "@/hooks/use-toast";
-import apartment1 from "@/assets/apartment-1.jpg";
-import apartment2 from "@/assets/apartment-2.jpg";
-import apartment3 from "@/assets/apartment-3.jpg";
+import { apartmentsData as rawApartmentsData } from "@/data/apartments";
 
-const apartmentsData: Apartment[] = [
-  {
-    id: 1,
-    name: "Sea View Deluxe",
-    image: apartment1,
-    price: 120,
-    guests: 4,
-    bedrooms: 2,
-    bathrooms: 1,
-    amenities: ["WiFi", "Parking", "AC", "Terrace"],
-    description: "Spacious apartment with breathtaking panoramic sea views, modern amenities, and a private terrace perfect for sunset watching.",
-    available: true,
-  },
-  {
-    id: 2,
-    name: "Cozy Studio",
-    image: apartment2,
-    price: 75,
-    guests: 2,
-    bedrooms: 1,
-    bathrooms: 1,
-    amenities: ["WiFi", "AC", "Balcony"],
-    description: "Charming studio apartment ideal for couples, featuring a cozy interior with a balcony overlooking the Adriatic Sea.",
-    available: true,
-  },
-  {
-    id: 3,
-    name: "Family Villa",
-    image: apartment3,
-    price: 180,
-    guests: 6,
-    bedrooms: 3,
-    bathrooms: 2,
-    amenities: ["WiFi", "Parking", "AC", "Garden", "BBQ"],
-    description: "Luxurious family villa with a large terrace, outdoor dining area, and stunning sunset views through the pine trees.",
-    available: true,
-  },
-];
+// Map to simpler Apartment type for card display
+const apartmentsData: Apartment[] = rawApartmentsData.map(apt => ({
+  id: apt.id,
+  slug: apt.slug,
+  name: apt.name,
+  image: apt.image,
+  price: apt.price,
+  guests: apt.guests,
+  bedrooms: apt.bedrooms,
+  bathrooms: apt.bathrooms,
+  amenities: apt.amenities,
+  description: apt.description,
+  available: apt.available,
+}));
 
 interface ApartmentsSectionProps {
   searchedDates?: { from: Date; to: Date } | null;
