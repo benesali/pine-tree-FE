@@ -3,6 +3,7 @@ import { DateRange } from "react-day-picker";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import ApartmentsSection from "@/components/ApartmentsSection";
+import InstagramFeed from "@/components/InstagramFeed";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -27,6 +28,7 @@ const Index = () => {
       <Navigation />
       <HeroSection onSearch={handleSearch} />
       <ApartmentsSection searchedDates={searchedDates} searchedGuests={searchedGuests} />
+      <InstagramFeed />
       <Footer />
     </main>
   );

@@ -1,6 +1,10 @@
 import { TreePine, Mail, Phone, MapPin } from "lucide-react";
+import SocialLinks from "./SocialLinks";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Footer = () => {
+  const { t } = useLanguage();
+
   return (
     <footer id="contact" className="bg-foreground text-primary-foreground">
       <div className="container mx-auto px-4 py-12 md:py-16">
@@ -18,6 +22,8 @@ const Footer = () => {
               apartments. Your perfect vacation awaits among the pine trees and 
               crystal-clear waters of Dalmatia.
             </p>
+            {/* Social Links */}
+            <SocialLinks variant="dark" />
           </div>
 
           {/* Quick Links */}
@@ -26,17 +32,17 @@ const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <a href="#apartments" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Apartments
+                  {t.nav.apartments}
                 </a>
               </li>
               <li>
-                <a href="#location" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Location
+                <a href="/reviews" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  {t.nav.reviews}
                 </a>
               </li>
               <li>
-                <a href="#about" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  About Us
+                <a href="/travel-tips" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  {t.nav.travelTips}
                 </a>
               </li>
             </ul>
@@ -44,7 +50,7 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h4 className="font-heading text-lg font-semibold mb-4">Contact Us</h4>
+            <h4 className="font-heading text-lg font-semibold mb-4">{t.nav.contact}</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-primary-foreground/70">
                 <Mail className="h-5 w-5 text-sea" />

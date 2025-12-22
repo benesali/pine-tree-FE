@@ -1,15 +1,19 @@
 import { TreePine, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import LanguageSwitcher from "./LanguageSwitcher";
+import SocialLinks from "./SocialLinks";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const navLinks = [
-    { href: "/#apartments", label: "Apartments" },
-    { href: "/reviews", label: "Reviews" },
-    { href: "/travel-tips", label: "Travel Tips" },
-    { href: "#contact", label: "Contact" },
+    { href: "/#apartments", label: t.nav.apartments },
+    { href: "/reviews", label: t.nav.reviews },
+    { href: "/travel-tips", label: t.nav.travelTips },
+    { href: "#contact", label: t.nav.contact },
   ];
 
   return (
@@ -25,7 +29,7 @@ const Navigation = () => {
           </a>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -35,19 +39,25 @@ const Navigation = () => {
                 {link.label}
               </a>
             ))}
+            <div className="h-6 w-px bg-border" />
+            <SocialLinks size="sm" />
+            <LanguageSwitcher />
             <Button variant="default" size="sm">
-              Book Now
+              {t.nav.bookNow}
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-foreground"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <div className="flex md:hidden items-center gap-2">
+            <LanguageSwitcher />
+            <button
+              className="p-2 text-foreground"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -64,8 +74,11 @@ const Navigation = () => {
                   {link.label}
                 </a>
               ))}
+              <div className="pt-4 border-t border-border">
+                <SocialLinks size="sm" />
+              </div>
               <Button variant="default" className="mt-2">
-                Book Now
+                {t.nav.bookNow}
               </Button>
             </div>
           </div>
