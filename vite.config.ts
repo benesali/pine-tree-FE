@@ -6,19 +6,11 @@ export default defineConfig({
   server: {
     port: 8080,
     proxy: {
-      "/login": {
-        target: "http://localhost:8000",
-        changeOrigin: true,
-      },
       "/auth": {
         target: "http://localhost:8000",
         changeOrigin: true,
       },
-      "/admin": {
-        target: "http://localhost:8000",
-        changeOrigin: true,
-      },
-      "/availability": {
+      "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
       },

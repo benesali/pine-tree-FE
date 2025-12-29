@@ -23,16 +23,19 @@ const AdminLogin = () => {
   e.preventDefault();
   setLoading(true);
 
-  try {
-    // ✅ DEV fake login
-    if (import.meta.env.DEV) {
-      if (email === FAKE_ADMIN.email && password === FAKE_ADMIN.password) {
-        setToken("fake-dev-token");
-        toast({ title: "Logged in (DEV)", description: "Fake admin access" });
-        navigate("/admin/calendar");
-        return;
-      }
-    }
+  // try {
+  //   // ✅ DEV fake login
+  //   if (import.meta.env.DEV) {
+  //     if (email === FAKE_ADMIN.email && password === FAKE_ADMIN.password) {
+  //       setToken("fake-dev-token");
+  //       toast({ title: "Logged in (DEV)", description: "Fake admin access" });
+  //       navigate("/admin/calendar");
+  //       return;
+  //     }
+  //   }
+    console.log("ADMIN LOGIN SOURCE FILE LOADED", import.meta.url);
+
+    console.log("LOGIN URL USED:", "/auth/login");
 
     // ⬇️ reálný backend login
     const res = await fetch("/auth/login", {
