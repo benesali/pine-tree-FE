@@ -52,7 +52,7 @@ const UnbookRange = () => {
 
     unbookRange(apartment, selectedFrom, selectedTo);
     toast({ title: "Dates unbooked", description: `Updated bookings for ${apartment.name}.` });
-    navigate(`/apartment/${apartment.slug}`);
+    navigate(`/apartments/${apartment.slug}`);
   };
 
   return (

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
-import ApartmentsSection from "@/components/ApartmentsSection";
+import BuildingSection from "@/components/BuildingSection";
 import InstagramFeed from "@/components/InstagramFeed";
 import Footer from "@/components/Footer";
 
@@ -15,11 +15,11 @@ const Index = () => {
       setSearchedDates({ from: dateRange.from, to: dateRange.to });
     }
     setSearchedGuests(guests);
-    
-    // Scroll to apartments section
-    const apartmentsSection = document.getElementById("apartments");
-    if (apartmentsSection) {
-      apartmentsSection.scrollIntoView({ behavior: "smooth" });
+
+    // Scroll to buildings section
+    const buildingsSection = document.getElementById("buildings");
+    if (buildingsSection) {
+      buildingsSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -27,7 +27,7 @@ const Index = () => {
     <main className="min-h-screen bg-background">
       <Navigation />
       <HeroSection onSearch={handleSearch} />
-      <ApartmentsSection searchedDates={searchedDates} searchedGuests={searchedGuests} />
+      <BuildingSection searchedDates={searchedDates} searchedGuests={searchedGuests} />
       <InstagramFeed />
       <Footer />
     </main>

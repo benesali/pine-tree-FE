@@ -12,6 +12,8 @@ import AdminCalendar from "./pages/AdminCalendar";
 import Reviews from "./pages/Reviews";
 import TravelTips from "./pages/TravelTips";
 import NotFound from "./pages/NotFound"; 
+import ProtectedRoute from "@/components/ProtectedRoute";
+import BuildingDetail from "@/pages/BuildingDetail";
 
 const queryClient = new QueryClient();
 
@@ -21,18 +23,32 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/apartment/:slug" element={<ApartmentDetail />} />
-            <Route path="/apartment/:slug/unbook" element={<UnbookRange />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/calendar" element={<AdminCalendar />} />
-            <Route path="/reviews" element={<Reviews />} />
-            <Route path="/travel-tips" element={<TravelTips />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+          <BrowserRouter>
+      <Routes>
+        {/* PUBLIC */}
+        <Route path="/" element={<Index />} />
+        <Route path="/apartments/:slug" element={<ApartmentDetail />} />
+        <Route path="/apartments/:slug/unbook" element={<UnbookRange />} />
+        <Route path="/reviews" element={<Reviews />} />
+        <Route path="/travel-tips" element={<TravelTips />} />
+        <Route  path="/buildings/:slug"  element={<BuildingDetail />}
+/>
+
+        {/* ADMIN */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/calendar"
+          element={
+            <ProtectedRoute>
+              <AdminCalendar />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>
   </QueryClientProvider>

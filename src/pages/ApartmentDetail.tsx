@@ -1,45 +1,256 @@
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Users, Bed, Bath, Check, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { format } from "date-fns";
+import { Users, Bed, Bath } from "lucide-react";
+
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import AvailabilityCalendar from "@/components/AvailabilityCalendar";
-import LocationInfo from "@/components/LocationInfo";
-import ReviewCard from "@/components/ReviewCard";
-import { getApartmentBySlug } from "@/data/apartments";
-import { getReviewsByApartmentId, getAverageRating, getReviewCount } from "@/data/reviews";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import { apiPublic } from "@/lib/apiPublic";
 import { toast } from "@/hooks/use-toast";
+import { DateRange } from "react-day-picker";
+
+/* ------------------------------------------------------------------ */
+/* Types                                                              */
+/* ------------------------------------------------------------------ */
+
+type CalendarStatus = "blocked" | "reserved" | "booked";
+
+type CalendarDay = {
+  date: string;
+  status: CalendarStatus;
+};
+
+type ApartmentApi = {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  buildingSlug: string;
+
+  guests: number;
+  bedrooms: number;
+  bathrooms: number;
+
+  amenities: string[];
+};
+
+type ApartmentImages = {
+  mainImage: string;
+  galleryImages: string[];
+};
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
+const fetchApartmentImages = async (
+  buildingSlug: string,
+  apartmentSlug: string
+): Promise<ApartmentImages | null> => {
+  const base = `/images/${buildingSlug}/${apartmentSlug}`;
+
+  try {
+    const res = await fetch(`${base}/manifest.json`);
+    if (!res.ok) return null;
+
+    const manifest = await res.json();
+
+    return {
+      mainImage: `${base}/${manifest.main}`,
+      galleryImages: manifest.gallery.map(
+        (f: string) => `${base}/${f}`
+      ),
+    };
+  } catch {
+    return null;
+  }
+};
+
+/* ------------------------------------------------------------------ */
+/* Component                                                          */
+/* ------------------------------------------------------------------ */
 
 const ApartmentDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const apartment = getApartmentBySlug(slug || "");
 
-  if (!apartment) {
-    return (
-      <main className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto px-4 pt-32 pb-16 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Apartment not found</h1>
-          <Link to="/#apartments">
-            <Button>Back to Apartments</Button>
-          </Link>
-        </div>
-        <Footer />
-      </main>
-    );
+  const [apartment, setApartment] = useState<ApartmentApi | null>(null);
+  const [images, setImages] = useState<ApartmentImages | null>(null);
+  const [calendarData, setCalendarData] = useState<CalendarDay[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [gdprAccepted, setGdprAccepted] = useState(false);
+
+  // Anti-spam
+  const [website, setWebsite] = useState("");
+  const [formLoadedAt] = useState(Date.now());
+
+  /* ------------------------------------------------------------------ */
+  /* Load apartment                                                     */
+  /* ------------------------------------------------------------------ */
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const loadApartment = async () => {
+      try {
+        const data = await apiPublic<ApartmentApi>(
+          `/api/apartments/${slug}`
+        );
+        setApartment(data);
+      } catch {
+        toast({ title: "Apartment not found" });
+      }
+    };
+
+    loadApartment();
+  }, [slug]);
+
+  /* ------------------------------------------------------------------ */
+  /* Load images from manifest                                          */
+  /* ------------------------------------------------------------------ */
+
+  useEffect(() => {
+    if (!apartment?.slug || !apartment?.buildingSlug) return;
+
+    const loadImages = async () => {
+      const imgs = await fetchApartmentImages(
+        apartment.buildingSlug,
+        apartment.slug
+      );
+      setImages(imgs);
+    };
+
+    loadImages();
+  }, [apartment?.slug, apartment?.buildingSlug]);
+
+  /* ------------------------------------------------------------------ */
+  /* Load calendar                                                      */
+  /* ------------------------------------------------------------------ */
+
+  useEffect(() => {
+    if (!apartment?.id) return;
+
+    const loadCalendar = async () => {
+      const now = new Date();
+      const from = `${now.getFullYear()}-01-01`;
+      const to = `${now.getFullYear() + 2}-12-31`;
+
+      try {
+        const data = await apiPublic<CalendarDay[]>(
+          `/api/calendar/${apartment.id}?from=${from}&to=${to}`
+        );
+        setCalendarData(data);
+      } catch {
+        toast({ title: "Failed to load availability" });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCalendar();
+  }, [apartment?.id]);
+
+  /* ------------------------------------------------------------------ */
+  /* Guards                                                            */
+  /* ------------------------------------------------------------------ */
+
+  if (!apartment && loading) {
+    return <div className="p-8">Loading apartment…</div>;
   }
 
-  const reviews = getReviewsByApartmentId(apartment.id);
-  const averageRating = getAverageRating(apartment.id);
-  const reviewCount = getReviewCount(apartment.id);
+  if (!apartment) {
+    return <div className="p-8">Apartment not found</div>;
+  }
 
-  const handleBooking = () => {
-    toast({
-      title: "Booking Request",
-      description: `Thank you for your interest in ${apartment.name}. Please contact us to complete your booking.`,
-    });
+  /* ------------------------------------------------------------------ */
+  /* Calendar helpers                                                   */
+  /* ------------------------------------------------------------------ */
+
+  const toDate = (d: CalendarDay) => {
+    const [y, m, day] = d.date.split("-").map(Number);
+    return new Date(y, m - 1, day);
   };
+
+  const modifiers = {
+    blocked: calendarData.filter(d => d.status === "blocked").map(toDate),
+    reserved: calendarData.filter(d => d.status === "reserved").map(toDate),
+    booked: calendarData.filter(d => d.status === "booked").map(toDate),
+    today: new Date(),
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Inquiry handler                                                    */
+  /* ------------------------------------------------------------------ */
+
+  const handleInquiry = () => {
+    if (website) return;
+
+    if (!selectedRange?.from || !selectedRange?.to) {
+      toast({ title: "Please select a date range first" });
+      return;
+    }
+
+    if (!email) {
+      toast({ title: "Please enter your email address" });
+      return;
+    }
+
+    if (!gdprAccepted) {
+      toast({ title: "Please accept GDPR consent to continue" });
+      return;
+    }
+
+    if (Date.now() - formLoadedAt < 3000) {
+      toast({ title: "Please take a moment before sending the inquiry" });
+      return;
+    }
+
+    const subject = encodeURIComponent(
+      `Apartment inquiry – ${apartment.name}`
+    );
+
+    const body = encodeURIComponent(
+      `Hello,
+
+I am interested in the apartment "${apartment.name}".
+
+Preferred stay:
+${format(selectedRange.from, "dd.MM.yyyy")} – ${format(
+        selectedRange.to,
+        "dd.MM.yyyy"
+      )}
+
+Contact email:
+${email}
+
+Message:
+${message}
+
+Thank you.`
+    );
+
+    window.open(
+      `mailto:info@pinetreedalmatia.cz?subject=${subject}&body=${body}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Render                                                            */
+  /* ------------------------------------------------------------------ */
 
   return (
     <main className="min-h-screen bg-background">
@@ -47,139 +258,137 @@ const ApartmentDetail = () => {
 
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Back button */}
-          <Link to="/#apartments" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Apartments
-          </Link>
+          <div className="max-w-5xl mx-auto">
 
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-2">
-                {apartment.name}
-              </h1>
-              <p className="text-muted-foreground flex items-center gap-2">
-                {apartment.location.city}, {apartment.location.country}
-                {reviewCount > 0 && (
-                  <>
-                    <span className="text-border">•</span>
-                    <span className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                      {averageRating} ({reviewCount} reviews)
+            {/* Gallery */}
+            {images && (
+              <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <img
+                  src={images.mainImage}
+                  alt={apartment.name}
+                  className="md:col-span-2 h-80 w-full object-cover rounded-xl"
+                />
+                <div className="grid grid-rows-2 gap-4">
+                  {images.galleryImages.slice(0, 2).map((img, i) => (
+                    <img
+                      key={i}
+                      src={img}
+                      alt=""
+                      className="h-full w-full object-cover rounded-xl"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Header */}
+            <h1 className="text-3xl font-semibold mb-3">
+              {apartment.name}
+            </h1>
+
+            <div className="flex flex-wrap gap-6 mb-6 text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                {apartment.guests} guests
+              </div>
+              <div className="flex items-center gap-2">
+                <Bed className="h-5 w-5 text-primary" />
+                {apartment.bedrooms} bedrooms
+              </div>
+              <div className="flex items-center gap-2">
+                <Bath className="h-5 w-5 text-primary" />
+                {apartment.bathrooms} bathrooms
+              </div>
+            </div>
+
+            <p className="text-muted-foreground mb-8">
+              {apartment.description}
+            </p>
+
+            {/* Amenities */}
+            {apartment.amenities.length > 0 && (
+              <div className="mb-10">
+                <h3 className="font-semibold mb-3">Amenities</h3>
+                <div className="flex flex-wrap gap-2">
+                  {apartment.amenities.map((a) => (
+                    <span
+                      key={a}
+                      className="px-3 py-1 text-sm bg-secondary rounded-full"
+                    >
+                      {a}
                     </span>
-                  </>
-                )}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">From</p>
-              <p className="text-3xl font-bold text-primary">€{apartment.price}</p>
-              <p className="text-sm text-muted-foreground">/ night</p>
-            </div>
-          </div>
-
-          {/* Main image */}
-          <div className="aspect-[16/9] md:aspect-[21/9] overflow-hidden rounded-xl mb-8">
-            <img
-              src={apartment.image}
-              alt={apartment.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          {/* Content grid */}
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left column - Details */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Quick info */}
-              <div className="flex flex-wrap gap-6 p-6 bg-card rounded-xl border border-border">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">{apartment.guests} guests</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Bed className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">{apartment.bedrooms} bedrooms</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Bath className="h-5 w-5 text-primary" />
-                  <span className="text-foreground">{apartment.bathrooms} bathrooms</span>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="font-heading text-xl font-semibold text-foreground mb-4">
-                  About this apartment
-                </h2>
-                <div className="prose prose-sm max-w-none text-muted-foreground">
-                  {apartment.fullDescription.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className="mb-4 leading-relaxed">
-                      {paragraph}
-                    </p>
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Amenities */}
-              <div className="bg-card rounded-xl border border-border p-6">
-                <h2 className="font-heading text-xl font-semibold text-foreground mb-4">
-                  Amenities
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {apartment.amenities.map((amenity) => (
-                    <div key={amenity} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-pine" />
-                      <span className="text-muted-foreground text-sm">{amenity}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* Availability */}
+            <div className="bg-card rounded-2xl p-6 shadow-elevated">
+              <Calendar
+                mode="range"
+                selected={selectedRange}
+                onSelect={setSelectedRange}
+                modifiers={modifiers}
+                modifiersClassNames={{
+                  selected: "bg-teal-400 text-white",
+                  today: "border border-teal-600",
+                  booked: "bg-red-300 text-red-900",
+                  reserved: "bg-yellow-300 text-yellow-900",
+                  blocked: "bg-gray-300 text-gray-600 line-through",
+                }}
+                disabled={[
+                  ...modifiers.booked,
+                  ...modifiers.reserved,
+                  ...modifiers.blocked,
+                ]}
+                numberOfMonths={2}
+              />
 
-              {/* Location */}
-              <LocationInfo apartment={apartment} />
+              <input
+                type="email"
+                className="w-full border rounded-lg p-3 mt-6"
+                placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
 
-              {/* Reviews */}
-              {reviews.length > 0 && (
-                <div className="bg-card rounded-xl border border-border p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="font-heading text-xl font-semibold text-foreground">
-                      Guest Reviews
-                    </h2>
-                    <div className="flex items-center gap-2">
-                      <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
-                      <span className="font-semibold text-foreground">{averageRating}</span>
-                      <span className="text-muted-foreground">({reviewCount} reviews)</span>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <ReviewCard key={review.id} review={review} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+              <textarea
+                className="w-full border rounded-lg p-3 mt-4"
+                rows={4}
+                placeholder="Your message (optional)"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
 
-            {/* Right column - Calendar & Booking */}
-            <div className="space-y-6">
-              <AvailabilityCalendar apartment={apartment} />
+              <input
+                type="text"
+                className="hidden"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
 
-              <Button size="lg" className="w-full" onClick={handleBooking}>
-                Request Booking
-              </Button>
+              <label className="flex items-start gap-3 mt-4 text-sm">
+                <input
+                  type="checkbox"
+                  checked={gdprAccepted}
+                  onChange={(e) => setGdprAccepted(e.target.checked)}
+                  className="mt-1"
+                />
+                <span>
+                  I consent to the processing of my personal data in accordance
+                  with the GDPR.
+                </span>
+              </label>
 
-              <Link to={`/apartment/${apartment.slug}/unbook`}>
-                <Button variant="outline" size="lg" className="w-full mt-2">
-                  Unbook dates
+              <div className="mt-4">
+                <Button onClick={handleInquiry}>
+                  Send inquiry by email
                 </Button>
-              </Link>
-
-              <p className="text-center text-sm text-muted-foreground">
-                Contact us for availability and booking
-              </p>
+              </div>
             </div>
+
           </div>
         </div>
       </div>

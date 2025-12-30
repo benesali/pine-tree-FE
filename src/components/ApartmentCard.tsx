@@ -95,7 +95,7 @@ const ApartmentCard = ({ apartment, onBook }: ApartmentCardProps) => {
 
         {/* CTA */}
         <div className="flex gap-2">
-          <Link to={`/apartment/${apartment.slug}`} className="flex-1">
+          <Link to={`/apartments/${apartment.slug}`} className="flex-1">
             <Button variant="outline" className="w-full">
               View Details
             </Button>
