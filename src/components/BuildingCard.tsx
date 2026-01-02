@@ -1,63 +1,40 @@
+import { useEffect } from "react";
 import { MapPin, Users, Home } from "lucide-react";
 import { Link } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-export interface BuildingCardData {
-  id: number;
-  slug: string;
-  name: string;
-  location: string;
-
-  heroImage: string;
-  previewImages: string[];
-
-  apartmentsCount: number;
-  minGuests: number;
-  maxGuests: number;
-
-  priceFrom: number;
-  availableApartments: number;
-}
+import ImageGallery from "@/components/ImageGallery";
+import { useImageGallery } from "@/hooks/useImageGallery";
+import { BuildingCardData } from "@/types/BuildingCardData";
 
 interface Props {
   building: BuildingCardData;
 }
 
 const BuildingCard = ({ building }: Props) => {
+  const { images } = useImageGallery(
+    `/images/${building.slug}/general`
+  );
+
   return (
-    <article className="bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elevated transition-all">
-      {/* Images */}
-      <div className="relative">
-        <div className="aspect-[4/3] overflow-hidden">
-          <img
-            src={building.heroImage}
-            alt={building.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
+    <article className="relative bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elevated transition-all">
 
-        <div className="absolute bottom-2 left-2 right-2 grid grid-cols-3 gap-2">
-          {building.previewImages.slice(0, 3).map((img, i) => (
-            <div
-              key={i}
-              className="aspect-square overflow-hidden rounded-lg border border-background"
-            >
-              <img
-                src={img}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
+      {/* Gallery */}
+      {images && (
+        <ImageGallery
+          {...images}
+          alt={building.name}
+          variant="card"
+        />
+      )}
 
-        {building.availableApartments > 0 && (
-          <Badge className="absolute top-3 right-3 bg-pine text-primary-foreground">
-            {building.availableApartments} available
-          </Badge>
-        )}
-      </div>
+      {/* Badge */}
+      {building.availableApartments > 0 && (
+        <Badge className="absolute top-3 right-3 bg-pine text-primary-foreground">
+          {building.availableApartments} available
+        </Badge>
+      )}
 
       {/* Content */}
       <div className="p-5">

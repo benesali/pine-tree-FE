@@ -27,7 +27,7 @@ export const fetchBuildings = async (
 const getFallbackBuildings = (): BuildingCardData[] => [
   {
     id: 1,
-    slug: "pine-tree-house",
+    slug: "pine-tree-house1",
     name: "Pine Tree House",
     location: "Srima, Croatia",
 

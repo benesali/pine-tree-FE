@@ -1,33 +1,39 @@
-import { useState } from "react";
-import { DateRange } from "react-day-picker";
+import { useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
+import ApartmentSearchSection from "@/components/ApartmentSearchSection";
 import BuildingSection from "@/components/BuildingSection";
 import InstagramFeed from "@/components/InstagramFeed";
 import Footer from "@/components/Footer";
 
 const Index = () => {
-  const [searchedDates, setSearchedDates] = useState<{ from: Date; to: Date } | null>(null);
-  const [searchedGuests, setSearchedGuests] = useState<number | undefined>();
+  const [searchParams] = useSearchParams();
 
-  const handleSearch = (dateRange: DateRange | undefined, guests: number) => {
-    if (dateRange?.from && dateRange?.to) {
-      setSearchedDates({ from: dateRange.from, to: dateRange.to });
-    }
-    setSearchedGuests(guests);
-
-    // Scroll to buildings section
-    const buildingsSection = document.getElementById("buildings");
-    if (buildingsSection) {
-      buildingsSection.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  const isSearching =
+    searchParams.has("from") &&
+    searchParams.has("to") &&
+    searchParams.has("guests");
 
   return (
     <main className="min-h-screen bg-background">
       <Navigation />
-      <HeroSection onSearch={handleSearch} />
-      <BuildingSection searchedDates={searchedDates} searchedGuests={searchedGuests} />
+      <HeroSection />
+
+      {/* SEARCH RESULTS – overlay pod hero */}
+      <section className="-mt-24 relative z-10">
+        <div className="max-w-6xl mx-auto px-4">
+          <ApartmentSearchSection />
+        </div>
+      </section>
+
+      {/* BUILDINGS – normální tok stránky */}
+      {!isSearching && (
+        <section className="relative z-0 py-16">
+          <div className="max-w-6xl mx-auto px-4">
+            <BuildingSection />
+          </div>
+        </section>
+      )}
       <InstagramFeed />
       <Footer />
     </main>

@@ -1,22 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { Users, Bed, Bath } from "lucide-react";
 
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Calendar } from "@/components/ui/calendar";
+import ImageGallery from "@/components/ImageGallery";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 import { apiPublic } from "@/lib/apiPublic";
 import { toast } from "@/hooks/use-toast";
 import { DateRange } from "react-day-picker";
+import { useImageGallery } from "@/hooks/useImageGallery";
+import InstagramStrip from "@/components/InstagramStrip";
+import { monthRange } from "@/lib/monthRange";
+
+/* ------------------------------------------------------------------ */
+/* Lazy components (performance critical)                              */
+/* ------------------------------------------------------------------ */
+
+const LazyCalendar = lazy(() =>
+  import("@/components/ui/LazyCalendar")
+);
 
 /* ------------------------------------------------------------------ */
 /* Types                                                              */
@@ -35,44 +39,10 @@ type ApartmentApi = {
   name: string;
   description: string;
   buildingSlug: string;
-
   guests: number;
   bedrooms: number;
   bathrooms: number;
-
   amenities: string[];
-};
-
-type ApartmentImages = {
-  mainImage: string;
-  galleryImages: string[];
-};
-
-/* ------------------------------------------------------------------ */
-/* Helpers                                                            */
-/* ------------------------------------------------------------------ */
-
-const fetchApartmentImages = async (
-  buildingSlug: string,
-  apartmentSlug: string
-): Promise<ApartmentImages | null> => {
-  const base = `/images/${buildingSlug}/${apartmentSlug}`;
-
-  try {
-    const res = await fetch(`${base}/manifest.json`);
-    if (!res.ok) return null;
-
-    const manifest = await res.json();
-
-    return {
-      mainImage: `${base}/${manifest.main}`,
-      galleryImages: manifest.gallery.map(
-        (f: string) => `${base}/${f}`
-      ),
-    };
-  } catch {
-    return null;
-  }
 };
 
 /* ------------------------------------------------------------------ */
@@ -83,7 +53,6 @@ const ApartmentDetail = () => {
   const { slug } = useParams<{ slug: string }>();
 
   const [apartment, setApartment] = useState<ApartmentApi | null>(null);
-  const [images, setImages] = useState<ApartmentImages | null>(null);
   const [calendarData, setCalendarData] = useState<CalendarDay[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -95,6 +64,10 @@ const ApartmentDetail = () => {
   // Anti-spam
   const [website, setWebsite] = useState("");
   const [formLoadedAt] = useState(Date.now());
+
+  // Calendar state
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
 
   /* ------------------------------------------------------------------ */
   /* Load apartment                                                     */
@@ -118,38 +91,28 @@ const ApartmentDetail = () => {
   }, [slug]);
 
   /* ------------------------------------------------------------------ */
-  /* Load images from manifest                                          */
+  /* Images (gallery)                                                   */
   /* ------------------------------------------------------------------ */
 
-  useEffect(() => {
-    if (!apartment?.slug || !apartment?.buildingSlug) return;
+  const baseImagePath = apartment
+    ? `/images/${apartment.buildingSlug}/${apartment.slug}`
+    : "";
 
-    const loadImages = async () => {
-      const imgs = await fetchApartmentImages(
-        apartment.buildingSlug,
-        apartment.slug
-      );
-      setImages(imgs);
-    };
-
-    loadImages();
-  }, [apartment?.slug, apartment?.buildingSlug]);
+  const { images } = useImageGallery(baseImagePath);
 
   /* ------------------------------------------------------------------ */
-  /* Load calendar                                                      */
+  /* Calendar data                                                      */
   /* ------------------------------------------------------------------ */
 
   useEffect(() => {
     if (!apartment?.id) return;
 
     const loadCalendar = async () => {
-      const now = new Date();
-      const from = `${now.getFullYear()}-01-01`;
-      const to = `${now.getFullYear() + 2}-12-31`;
+      const { from, to } = monthRange(currentMonth, 3);
 
       try {
         const data = await apiPublic<CalendarDay[]>(
-          `/api/calendar/${apartment.id}?from=${from}&to=${to}`
+          `/api/apartments/${apartment.id}/availability?from=${from}&to=${to}`
         );
         setCalendarData(data);
       } catch {
@@ -160,7 +123,16 @@ const ApartmentDetail = () => {
     };
 
     loadCalendar();
-  }, [apartment?.id]);
+  }, [apartment?.id, currentMonth]);
+
+  /* ------------------------------------------------------------------ */
+  /* Lazy mount calendar (after first paint)                            */
+  /* ------------------------------------------------------------------ */
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowCalendar(true), 100);
+    return () => clearTimeout(t);
+  }, []);
 
   /* ------------------------------------------------------------------ */
   /* Guards                                                            */
@@ -178,15 +150,15 @@ const ApartmentDetail = () => {
   /* Calendar helpers                                                   */
   /* ------------------------------------------------------------------ */
 
-  const toDate = (d: CalendarDay) => {
+  function calendarDayToDate(d: CalendarDay) {
     const [y, m, day] = d.date.split("-").map(Number);
     return new Date(y, m - 1, day);
-  };
+  }
 
   const modifiers = {
-    blocked: calendarData.filter(d => d.status === "blocked").map(toDate),
-    reserved: calendarData.filter(d => d.status === "reserved").map(toDate),
-    booked: calendarData.filter(d => d.status === "booked").map(toDate),
+    blocked: calendarData.filter(d => d.status === "blocked").map(calendarDayToDate),
+    reserved: calendarData.filter(d => d.status === "reserved").map(calendarDayToDate),
+    booked: calendarData.filter(d => d.status === "booked").map(calendarDayToDate),
     today: new Date(),
   };
 
@@ -260,25 +232,13 @@ Thank you.`
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
 
-            {/* Gallery */}
+            {/* Gallery (LCP already solved) */}
             {images && (
-              <div className="mb-10 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <img
-                  src={images.mainImage}
-                  alt={apartment.name}
-                  className="md:col-span-2 h-80 w-full object-cover rounded-xl"
-                />
-                <div className="grid grid-rows-2 gap-4">
-                  {images.galleryImages.slice(0, 2).map((img, i) => (
-                    <img
-                      key={i}
-                      src={img}
-                      alt=""
-                      className="h-full w-full object-cover rounded-xl"
-                    />
-                  ))}
-                </div>
-              </div>
+              <ImageGallery
+                {...images}
+                alt={apartment.name}
+                variant="detail"
+              />
             )}
 
             {/* Header */}
@@ -324,25 +284,31 @@ Thank you.`
 
             {/* Availability */}
             <div className="bg-card rounded-2xl p-6 shadow-elevated">
-              <Calendar
-                mode="range"
-                selected={selectedRange}
-                onSelect={setSelectedRange}
-                modifiers={modifiers}
-                modifiersClassNames={{
-                  selected: "bg-teal-400 text-white",
-                  today: "border border-teal-600",
-                  booked: "bg-red-300 text-red-900",
-                  reserved: "bg-yellow-300 text-yellow-900",
-                  blocked: "bg-gray-300 text-gray-600 line-through",
-                }}
-                disabled={[
-                  ...modifiers.booked,
-                  ...modifiers.reserved,
-                  ...modifiers.blocked,
-                ]}
-                numberOfMonths={2}
-              />
+              {showCalendar && (
+                <Suspense fallback={<div className="h-[320px]" />}>
+                  <LazyCalendar
+                    mode="range"
+                    selected={selectedRange}
+                    onSelect={setSelectedRange}
+                    month={currentMonth}
+                    onMonthChange={setCurrentMonth}
+                    numberOfMonths={2}
+                    modifiers={modifiers}
+                    modifiersClassNames={{
+                      selected: "bg-teal-400 text-white",
+                      today: "border border-teal-600",
+                      booked: "bg-red-300 text-red-900",
+                      reserved: "bg-yellow-300 text-yellow-900",
+                      blocked: "bg-gray-300 text-gray-600 line-through",
+                    }}
+                    disabled={[
+                      ...modifiers.booked,
+                      ...modifiers.reserved,
+                      ...modifiers.blocked,
+                    ]}
+                  />
+                </Suspense>
+              )}
 
               <input
                 type="email"
@@ -393,6 +359,7 @@ Thank you.`
         </div>
       </div>
 
+      <InstagramStrip />
       <Footer />
     </main>
   );

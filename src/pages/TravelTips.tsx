@@ -4,6 +4,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { travelTipsData, categories, TravelTip } from "@/data/travelTips";
 import { cn } from "@/lib/utils";
+import InstagramStrip from "@/components/InstagramStrip";
 
 const TravelTips = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -72,6 +73,7 @@ const TravelTips = () => {
           </div>
         </div>
       </div>
+      <InstagramStrip />  
 
       <Footer />
     </main>

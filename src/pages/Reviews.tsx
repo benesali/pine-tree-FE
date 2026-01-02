@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import ReviewCard from "@/components/ReviewCard";
 import { reviewsData } from "@/data/reviews";
 import { apartmentsData } from "@/data/apartments";
+import InstagramStrip from "@/components/InstagramStrip";
 
 const Reviews = () => {
   // Calculate overall stats
@@ -64,6 +65,8 @@ const Reviews = () => {
           </div>
         </div>
       </div>
+
+      <InstagramStrip />  
 
       <Footer />
     </main>

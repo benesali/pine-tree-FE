@@ -3,12 +3,12 @@ import { useParams } from "react-router-dom";
 
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import ApartmentInlineCard, {
-  ApartmentInline,
-} from "@/components/ApartmentInlineCard";
+import {ApartmentInlineCardData} from "@/types/ApartmentInlineCardData";
+import ApartmentInlineCard from "@/components/ApartmentInlineCard";
 
 import { apiPublic } from "@/lib/apiPublic";
 import { toast } from "@/hooks/use-toast";
+import InstagramStrip from "@/components/InstagramStrip";
 
 interface BuildingDetailData {
   id: number;
@@ -16,7 +16,7 @@ interface BuildingDetailData {
   name: string;
   location: string;
   description?: string;
-  apartments: ApartmentInline[];
+  apartments: ApartmentInlineCardData[];
 }
 
 const BuildingDetail = () => {
@@ -25,16 +25,24 @@ const BuildingDetail = () => {
     useState<BuildingDetailData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!slug) return;
+useEffect(() => {
+  if (!slug) return;
 
-    apiPublic<BuildingDetailData>(`/api/buildings/${slug}`)
-      .then(setBuilding)
-      .catch(() => toast({ title: "Building not found" }))
-      .finally(() => setLoading(false));
-  }, [slug]);
+  apiPublic<any>(`/api/buildings/${slug}`)
+    .then((data) => {
+      setBuilding({
+        ...data,
+        apartments: data.apartments.map((a: any) => ({
+          ...a,
+          buildingSlug: a.building_slug, 
+        })),
+      });
+    })
+    .catch(() => toast({ title: "Building not found" }))
+    .finally(() => setLoading(false));
+}, [slug]);
 
-  const handleInquiry = (apartment: ApartmentInline) => {
+  const handleInquiry = (apartment: ApartmentInlineCardData ) => {
     toast({
       title: "Inquiry",
       description: `Inquiry for ${apartment.name} – form will open`,
@@ -113,6 +121,7 @@ const BuildingDetail = () => {
 
         </div>
       </div>
+      <InstagramStrip />
 
       <Footer />
     </main>

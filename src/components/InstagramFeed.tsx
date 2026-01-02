@@ -1,93 +1,90 @@
 import { Instagram, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Sample Instagram-style posts (in a real app, these would come from Instagram API)
 const instagramPosts = [
   {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=400&fit=crop",
-    alt: "Sunset over Dalmatian coast",
-    likes: 234,
+    id: "1",
+    image: "/instagram/srima-sunset.jpg",
+    alt: "Sunset in Srima, Dalmatia",
+    url: "https://instagram.com/pinetreedalmatia",
   },
   {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1499793983394-e58f8b4c4909?w=400&h=400&fit=crop",
-    alt: "Crystal clear Adriatic waters",
-    likes: 189,
+    id: "2",
+    image: "/instagram/adriatic-sea.jpg",
+    alt: "Crystal clear Adriatic sea",
+    url: "https://instagram.com/pinetreedalmatia",
   },
   {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1534430480872-3498386e7856?w=400&h=400&fit=crop",
-    alt: "Traditional Croatian cuisine",
-    likes: 156,
+    id: "3",
+    image: "/instagram/apartment-terrace.jpg",
+    alt: "Terrace view from Pine Tree apartment",
+    url: "https://instagram.com/pinetreedalmatia",
   },
   {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=400&h=400&fit=crop",
-    alt: "Cozy apartment terrace view",
-    likes: 312,
+    id: "4",
+    image: "/instagram/pine-trees.jpg",
+    alt: "Pine trees by the sea",
+    url: "https://instagram.com/pinetreedalmatia",
   },
   {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=400&h=400&fit=crop",
-    alt: "Pine trees and seaside",
-    likes: 278,
+    id: "5",
+    image: "/instagram/srima-walk.jpg",
+    alt: "Evening walk in Srima",
+    url: "https://instagram.com/pinetreedalmatia",
   },
   {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop",
+    id: "6",
+    image: "/instagram/apartment-interior.jpg",
     alt: "Modern apartment interior",
-    likes: 145,
+    url: "https://instagram.com/pinetreedalmatia",
   },
 ];
 
 const InstagramFeed = () => {
   const { locale } = useLanguage();
 
-  const titles: Record<string, { title: string; subtitle: string; follow: string }> = {
+  const texts: Record<string, { title: string; subtitle: string }> = {
     en: {
-      title: "Follow Our Journey",
-      subtitle: "See the latest from Pine Tree Dalmatia on Instagram",
-      follow: "Follow Us",
+      title: "Moments from Dalmatia",
+      subtitle: "A glimpse of life around Pine Tree Dalmatia",
     },
     cs: {
-      title: "Sledujte naši cestu",
-      subtitle: "Podívejte se na nejnovější příspěvky z Pine Tree Dalmatia na Instagramu",
-      follow: "Sledovat",
+      title: "Momenty z Dalmácie",
+      subtitle: "Malá ochutnávka atmosféry kolem Pine Tree Dalmatia",
     },
     de: {
-      title: "Folgen Sie unserer Reise",
-      subtitle: "Sehen Sie das Neueste von Pine Tree Dalmatia auf Instagram",
-      follow: "Folgen",
+      title: "Momente aus Dalmatien",
+      subtitle: "Ein kleiner Einblick in die Atmosphäre von Pine Tree Dalmatia",
     },
   };
 
-  const content = titles[locale] || titles.en;
+  const content = texts[locale] ?? texts.en;
 
   return (
-    <section className="py-16 md:py-24 bg-secondary/30">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <Instagram className="h-6 w-6 text-primary" />
-            <span className="text-primary font-medium">@pinetreedalmatia</span>
+    <section className="py-16 bg-secondary/20">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Header – velmi jemný */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-1.5 text-muted-foreground mb-3">
+            <Instagram className="h-2.5 w-2.5 relative top-[1px]" />
+            <span className="text-xs">@pinetreedalmatia</span>
           </div>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-3">
+
+          <h2 className="font-heading text-2xl md:text-3xl font-semibold mb-2">
             {content.title}
           </h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
+
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
             {content.subtitle}
           </p>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-8">
+        {/* Grid – klidná mozaika */}
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-10">
           {instagramPosts.map((post) => (
             <a
               key={post.id}
-              href="https://instagram.com/pinetreedalmatia"
+              href={post.url}
               target="_blank"
               rel="noopener noreferrer"
               className="group relative aspect-square overflow-hidden rounded-lg"
@@ -95,32 +92,28 @@ const InstagramFeed = () => {
               <img
                 src={post.image}
                 alt={post.alt}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="text-primary-foreground text-center">
-                  <Instagram className="h-6 w-6 mx-auto mb-1" />
-                  <span className="text-sm font-medium">{post.likes} ❤️</span>
-                </div>
+
+              {/* Jemný hover */}
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <Instagram className="h-3 w-3 text-white/90" />
               </div>
             </a>
           ))}
         </div>
 
-        {/* CTA */}
+        {/* Footer CTA – skoro jako poznámka */}
         <div className="text-center">
-          <Button asChild variant="outline" className="gap-2">
-            <a
-              href="https://instagram.com/pinetreedalmatia"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Instagram className="h-4 w-4" />
-              {content.follow}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </Button>
+          <a
+            href="https://instagram.com/pinetreedalmatia"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Follow on Instagram
+            <ExternalLink className="h-2.5 w-2.5" />
+          </a>
         </div>
       </div>
     </section>
