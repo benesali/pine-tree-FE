@@ -1,5 +1,5 @@
 import { apiPublic } from "@/lib/apiPublic";
-import type { BuildingCardData } from "@/components/BuildingCard";
+import type { BuildingCardData } from "@/types/BuildingCardData";
 
 /*
   Fetch buildings for homepage listing.
@@ -30,14 +30,6 @@ const getFallbackBuildings = (): BuildingCardData[] => [
     slug: "pine-tree-house1",
     name: "Pine Tree House",
     location: "Srima, Croatia",
-
-    heroImage: "/images/house/hero.jpg",
-    previewImages: [
-      "/images/apartments/a/living.jpg",
-      "/images/apartments/b/bedroom.jpg",
-      "/images/apartments/c/terrace.jpg",
-    ],
-
     apartmentsCount: 4,
     minGuests: 2,
     maxGuests: 6,
