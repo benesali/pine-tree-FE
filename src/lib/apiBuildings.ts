@@ -6,10 +6,14 @@ import type { BuildingCardData } from "@/types/BuildingCardData";
   Date range is optional and will be used later for availability filtering.
 */
 export const fetchBuildings = async (
-  dates?: { from: Date; to: Date } | null
+  dates?: { from: Date; to: Date } | null,
+  lang: string = "cs" 
 ): Promise<BuildingCardData[]> => {
   try {
-    let url = "/api/buildings";
+    let url = `/api/${lang}/buildings`;
+    if (url.includes("/api/undefined/")) {
+    throw new Error("Lang is undefined");
+  }
 
     if (dates?.from && dates?.to) {
       const from = dates.from.toISOString().split("T")[0];

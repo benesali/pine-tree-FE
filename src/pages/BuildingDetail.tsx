@@ -20,15 +20,15 @@ interface BuildingDetailData {
 }
 
 const BuildingDetail = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, lang } = useParams<{ slug: string; lang: string }>();
   const [building, setBuilding] =
     useState<BuildingDetailData | null>(null);
   const [loading, setLoading] = useState(true);
 
 useEffect(() => {
-  if (!slug) return;
+  if (!slug || !lang) return;
 
-  apiPublic<any>(`/api/buildings/${slug}`)
+  apiPublic<any>(`/api/${lang}/buildings/${slug}`)
     .then((data) => {
       setBuilding({
         ...data,
@@ -53,11 +53,11 @@ useEffect(() => {
   if (loading) {
     return (
       <main>
-        <Navigation />
+
         <div className="pt-32 text-center text-muted-foreground">
           Loading building…
         </div>
-        <Footer />
+
       </main>
     );
   }
@@ -65,18 +65,16 @@ useEffect(() => {
   if (!building) {
     return (
       <main>
-        <Navigation />
         <div className="pt-32 text-center">
           Building not found
         </div>
-        <Footer />
+
       </main>
     );
   }
 
   return (
     <main className="min-h-screen bg-background">
-      <Navigation />
 
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-5xl">
@@ -106,6 +104,7 @@ useEffect(() => {
               <ApartmentInlineCard
                 key={apt.id}
                 apartment={apt}
+                lang={lang!}
                 onInquiry={handleInquiry}
               />
             ))}
@@ -121,9 +120,6 @@ useEffect(() => {
 
         </div>
       </div>
-      <InstagramStrip />
-
-      <Footer />
     </main>
   );
 };

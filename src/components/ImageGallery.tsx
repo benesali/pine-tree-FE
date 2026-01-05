@@ -49,7 +49,6 @@ const ImageGallery = ({
           width={400}
           height={300}
           loading="eager"
-          fetchPriority="high"
           decoding="async"
           className="col-span-2 h-full w-full object-cover"
         />
@@ -91,7 +90,6 @@ const ImageGallery = ({
               width={570}
               height={570}
               loading="eager"
-              fetchPriority="high"
               decoding="async"
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />

@@ -10,9 +10,10 @@ import { BuildingCardData } from "@/types/BuildingCardData";
 
 interface Props {
   building: BuildingCardData;
+  lang: string;
 }
 
-const BuildingCard = ({ building }: Props) => {
+const BuildingCard = ({ building, lang }: Props) => {
   const { images } = useImageGallery(
     `/images/${building.slug}/general`
   );
@@ -60,14 +61,14 @@ const BuildingCard = ({ building }: Props) => {
         <div className="flex items-center justify-between mt-5">
           <div>
             <div className="text-lg font-bold text-primary">
-              from €{building.priceFrom}
+              from €95
             </div>
             <div className="text-xs text-muted-foreground">
               per night
             </div>
           </div>
 
-          <Link to={`/buildings/${building.slug}`}>
+          <Link to={`/${lang}/buildings/${building.slug}`}>
             <Button>View apartments</Button>
           </Link>
         </div>

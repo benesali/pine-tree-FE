@@ -25,7 +25,7 @@ const ApartmentPreviewGallery = ({
             className="
               w-full h-full object-cover rounded-lg
               transition-all duration-300
-              hover:scale-[1.6]
+              hover:scale-[1.7]
               hover:-translate-y-1
               hover:z-20
               hover:shadow-xl

@@ -7,12 +7,13 @@ import { Link } from "react-router-dom";
 
 interface Props {
   apartment: ApartmentInlineCardData;
+  lang: string;
   onInquiry: (apartment: ApartmentInlineCardData) => void;
 }
 
-const ApartmentInlineCard = ({ apartment, onInquiry }: Props) => {
+const ApartmentInlineCard = ({ apartment, onInquiry, lang }: Props) => {
   const { images } = useImageGallery(
-    `/images/${apartment.buildingSlug}/${apartment.slug}`
+    `/images/${apartment.buildingSlug}/${apartment.slug}`,
   );
 
 
@@ -60,22 +61,15 @@ console.log("INLINE CARD", apartment.slug, images);
       {/* Footer actions */}
       <div className="flex items-center justify-between">
         <div className="font-semibold text-primary">
-          from €{apartment.priceFrom}
+          from €95/night
         </div>
 
         <div className="flex gap-2">
-          <Link to={`/apartments/${apartment.slug}`}>
+          <Link to={`/${lang}/apartments/${apartment.slug}`}>
             <Button variant="outline">
               View details
             </Button>
           </Link>
-
-          <Button
-            variant="secondary"
-            onClick={() => onInquiry(apartment)}
-          >
-            Inquiry
-          </Button>
         </div>
       </div>
     </article>

@@ -50,7 +50,7 @@ type ApartmentApi = {
 /* ------------------------------------------------------------------ */
 
 const ApartmentDetail = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug , lang} = useParams<{ slug: string; lang: string }>();
 
   const [apartment, setApartment] = useState<ApartmentApi | null>(null);
   const [calendarData, setCalendarData] = useState<CalendarDay[]>([]);
@@ -79,7 +79,7 @@ const ApartmentDetail = () => {
     const loadApartment = async () => {
       try {
         const data = await apiPublic<ApartmentApi>(
-          `/api/apartments/${slug}`
+          `/api/${lang}/apartments/${slug}`
         );
         setApartment(data);
       } catch {
@@ -112,7 +112,7 @@ const ApartmentDetail = () => {
 
       try {
         const data = await apiPublic<CalendarDay[]>(
-          `/api/apartments/${apartment.id}/availability?from=${from}&to=${to}`
+          `/api/${lang}/apartments/${apartment.id}/availability?from=${from}&to=${to}`
         );
         setCalendarData(data);
       } catch {
@@ -226,7 +226,6 @@ Thank you.`
 
   return (
     <main className="min-h-screen bg-background">
-      <Navigation />
 
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4">
@@ -359,8 +358,6 @@ Thank you.`
         </div>
       </div>
 
-      <InstagramStrip />
-      <Footer />
     </main>
   );
 };

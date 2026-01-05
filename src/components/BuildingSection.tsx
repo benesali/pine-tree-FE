@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import BuildingCard, { BuildingCardData } from "./BuildingCard";
+import BuildingCard from "./BuildingCard";
+import { BuildingCardData } from "@/types/BuildingCardData";  
 import { toast } from "@/hooks/use-toast";
 import { fetchBuildings } from "@/lib/apiBuildings";
+import { useParams } from "react-router-dom";
 
 interface Props {
   searchedDates?: { from: Date; to: Date } | null;
@@ -9,17 +11,21 @@ interface Props {
 }
 
 const BuildingsSection = ({ searchedDates, searchedGuests }: Props) => {
+  
+  const {lang} = useParams<{ lang: string }>(); 
   const [buildings, setBuildings] = useState<BuildingCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBuildings(searchedDates)
+    if (!lang) return;
+
+    fetchBuildings(searchedDates, lang)
       .then(setBuildings)
       .catch(() =>
         toast({ title: "Failed to load accommodation" })
       )
       .finally(() => setLoading(false));
-  }, [searchedDates]);
+  }, [searchedDates, lang]);
 
   if (loading) {
     return (
@@ -37,6 +43,7 @@ const BuildingsSection = ({ searchedDates, searchedGuests }: Props) => {
             <BuildingCard
               key={building.id}
               building={building}
+              lang={lang!}
             />
           ))}
         </div>

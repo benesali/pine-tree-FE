@@ -18,6 +18,7 @@ export interface Translations {
     about: string;
     contact: string;
     bookNow: string;
+    faq: string; 
   };
   hero: {
     title: string;
@@ -64,6 +65,7 @@ export const en: Translations = {
     about: 'About Us',
     contact: 'Contact',
     bookNow: 'Book Now',
+    faq: 'FAQ', 
   },
   hero: {
     title: 'Your Dalmatian Paradise Awaits',
@@ -110,6 +112,7 @@ export const cs: Translations = {
     about: 'O nás',
     contact: 'Kontakt',
     bookNow: 'Rezervovat',
+    faq: 'FAQ', 
   },
   hero: {
     title: 'Váš dalmatský ráj čeká',
@@ -156,6 +159,7 @@ export const de: Translations = {
     about: 'Über uns',
     contact: 'Kontakt',
     bookNow: 'Jetzt buchen',
+    faq: 'FAQ', 
   },
   hero: {
     title: 'Ihr dalmatinisches Paradies wartet',

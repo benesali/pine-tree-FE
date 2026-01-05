@@ -1,20 +1,27 @@
-import { TreePine, Menu, X } from "lucide-react";
+import { TreePine, Menu, X, HomeIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "./LanguageSwitcher";
 import SocialLinks from "./SocialLinks";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NavLink, useParams } from "react-router-dom";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t } = useLanguage();
+  const { lang } = useParams<{ lang: string }>();
 
-  const navLinks = [
-    { href: "/#apartments", label: t.nav.apartments },
-    { href: "/reviews", label: t.nav.reviews },
-    { href: "/travel-tips", label: t.nav.travelTips },
-    { href: "#contact", label: t.nav.contact },
-  ];
+
+const navLinks = [
+  { to: `/${lang}/apartments`, label: t.nav.apartments },
+  { to: `/${lang}/reviews`, label: t.nav.reviews },
+  { to: `/${lang}/travel-tips`, label: t.nav.travelTips },
+  { to: `/${lang}/faq`, label: t.nav.faq },
+  { to: `/${lang}/contact`, label: t.nav.contact },
+];
+
+
+
 
    return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
@@ -27,17 +34,25 @@ const Navigation = () => {
               Pine Tree Dalmatia
             </span>
           </a>
-
+          <NavLink to="/" aria-label="Home">
+        <HomeIcon className="w-5 h-5" />
+          </NavLink>
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `font-medium transition-colors ${
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`
+                }
               >
                 {link.label}
-              </a>
+              </NavLink>
             ))}
             <div className="h-6 w-px bg-border" />
             <SocialLinks size="sm" />

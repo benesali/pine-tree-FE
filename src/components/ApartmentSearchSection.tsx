@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { DateRange } from "react-day-picker";
 import ApartmentInlineCard from "./ApartmentInlineCard";
 import DateRangeSearch from "./DateRangeSearch";
@@ -12,6 +12,8 @@ const ApartmentSearchSection = () => {
   const [searched, setSearched] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const {lang} = useParams<{ lang: string }>(); 
+  
 
   // 🔁 search triggered from UI
   const handleSearch = (dateRange: DateRange | undefined, guests: number) => {
@@ -29,6 +31,8 @@ const ApartmentSearchSection = () => {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
     const guests = searchParams.get("guests");
+    console.log("lang:", lang);
+    if (!lang) return;
 
     if (!from || !to || !guests) return;
 
@@ -37,7 +41,7 @@ const ApartmentSearchSection = () => {
       setSearched(true);
 
       const res = await fetch(
-        `/api/apartments/search?from=${from}&to=${to}&guests=${guests}`
+        `/api/${lang}/apartments/search?from=${from}&to=${to}&guests=${guests}`
       );
 
       if (!res.ok) {
@@ -67,6 +71,7 @@ const ApartmentSearchSection = () => {
             <ApartmentInlineCard
               key={apt.id}
               apartment={apt}
+              lang={lang}
               onInquiry={() => console.log("Inquiry", apt)}
             />
           ))}

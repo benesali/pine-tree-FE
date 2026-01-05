@@ -45,6 +45,14 @@ const Footer = () => {
                   {t.nav.travelTips}
                 </a>
               </li>
+              <li>
+                <a
+                href="/faq"
+                className="text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+                aria-label="Frequently Asked Questions">
+                {t.nav.faq}
+              </a>
+            </li>
             </ul>
           </div>
 
